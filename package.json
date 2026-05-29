@@ -1,0 +1,66 @@
+{
+  "name": "fanfare",
+  "version": "0.1.0",
+  "description": "Hotkey-triggered joy for virtual presentations.",
+  "main": "out/main/index.js",
+  "author": "burntsoup",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "package:win": "electron-vite build && electron-builder --win --publish never",
+    "package:mac": "electron-vite build && electron-builder --mac --publish never",
+    "gen:icons": "powershell -ExecutionPolicy Bypass -File scripts/gen-icons.ps1",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
+  },
+  "dependencies": {
+    "electron-store": "8.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.30",
+    "@types/react": "18.2.74",
+    "@types/react-dom": "18.2.24",
+    "@vitejs/plugin-react": "4.2.1",
+    "autoprefixer": "10.4.19",
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1",
+    "electron-vite": "2.1.0",
+    "postcss": "^8.5.15",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "tailwindcss": "3.4.3",
+    "typescript": "5.4.5",
+    "vite": "5.2.8"
+  },
+  "build": {
+    "appId": "com.fanfare.app",
+    "productName": "Fanfare",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "resources",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png"
+    }
+  }
+}

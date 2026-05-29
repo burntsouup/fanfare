@@ -1,0 +1,540 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Keyboard focus visibility — kept off the overlay window via :not(body) below */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[role='switch']:focus-visible {
+  outline: 2px solid #ff8fc2;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Screen-reader-only utility for live-region announcements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Applause animation ---------- */
+
+@keyframes applause-pop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(var(--rot, 0deg));
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  60% {
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, 0px)))
+      scale(1.2) rotate(var(--rot, 0deg));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0px) * 1.4), calc(-50% + var(--dy, 0px) * 1.4 - 60px))
+      scale(0.6) rotate(calc(var(--rot, 0deg) * 1.5));
+    opacity: 0;
+  }
+}
+
+@keyframes applause-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes applause-banner {
+  0% {
+    transform: translate(-50%, calc(-50% + 30px)) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 1;
+  }
+  85% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, calc(-50% - 30px)) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.applause-emoji {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 56px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+  animation-name: applause-pop;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+  will-change: transform, opacity;
+}
+
+.applause-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 240px;
+  height: 240px;
+  border-radius: 9999px;
+  border: 6px solid rgba(255, 95, 168, 0.55);
+  transform: translate(-50%, -50%) scale(0);
+  animation: applause-ring 1.2s ease-out both;
+  will-change: transform, opacity;
+}
+
+.applause-banner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #ff5fa8, #7c5cff);
+  color: white;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 40px rgba(124, 92, 255, 0.45), 0 0 0 4px rgba(255, 255, 255, 0.08);
+  animation: applause-banner var(--duration, 3000ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+/* ---------- Confetti ---------- */
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--drift, 40px), 110vh, 0) rotate(var(--spin, 720deg));
+    opacity: 1;
+  }
+}
+
+.confetti-piece {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* ---------- Fireworks ---------- */
+
+@keyframes firework-spark {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--dx, 0px), calc(var(--dy, 0px) + 40px));
+    opacity: 0;
+  }
+}
+
+.firework-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.firework-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  box-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+  animation-name: firework-spark;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* ---------- Pixel hearts ---------- */
+
+@keyframes pixel-float {
+  0% {
+    transform: translate(-50%, 25vh) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, 8vh) scale(1);
+    opacity: 1;
+  }
+  85% {
+    transform: translate(calc(-50% + var(--sway, 40px) * 0.7), -22vh) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--sway, 40px)), -32vh) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.pixel-heart {
+  position: absolute;
+  left: 50%;
+  /* top is set per-instance in JSX so hearts spread across the central band */
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  /* Heart drawn with box-shadow pixels — 6px grid. */
+  box-shadow:
+    -12px -18px 0 var(--c, #ff5fa8), 0 -18px 0 var(--c, #ff5fa8),
+    12px -18px 0 var(--c, #ff5fa8), -18px -12px 0 var(--c, #ff5fa8),
+    -6px -12px 0 var(--c, #ff5fa8), 6px -12px 0 var(--c, #ff5fa8),
+    18px -12px 0 var(--c, #ff5fa8), -18px -6px 0 var(--c, #ff5fa8),
+    -12px -6px 0 var(--c, #ff5fa8), -6px -6px 0 var(--c, #ff5fa8),
+    0 -6px 0 var(--c, #ff5fa8), 6px -6px 0 var(--c, #ff5fa8),
+    12px -6px 0 var(--c, #ff5fa8), 18px -6px 0 var(--c, #ff5fa8),
+    -12px 0 0 var(--c, #ff5fa8), -6px 0 0 var(--c, #ff5fa8),
+    0 0 0 var(--c, #ff5fa8), 6px 0 0 var(--c, #ff5fa8),
+    12px 0 0 var(--c, #ff5fa8), -6px 6px 0 var(--c, #ff5fa8),
+    0 6px 0 var(--c, #ff5fa8), 6px 6px 0 var(--c, #ff5fa8),
+    0 12px 0 var(--c, #ff5fa8);
+  animation-name: pixel-float;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* ---------- Correct! game-show popup ---------- */
+
+@keyframes correct-bounce {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3) rotate(-8deg);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.15) rotate(2deg);
+    opacity: 1;
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(0.96) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.03) rotate(0deg);
+  }
+  85% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.4) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+.correct-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 28px 56px;
+  background: linear-gradient(180deg, #fde047 0%, #facc15 50%, #eab308 100%);
+  color: #1f1300;
+  font-weight: 900;
+  font-size: 64px;
+  letter-spacing: 0.06em;
+  border-radius: 18px;
+  border: 6px solid #fff8dc;
+  box-shadow: 0 0 0 6px #b45309, 0 22px 60px rgba(0, 0, 0, 0.45),
+    inset 0 -6px 0 rgba(0, 0, 0, 0.12);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.6);
+  animation: correct-bounce var(--duration, 3000ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  white-space: nowrap;
+}
+
+@keyframes correct-sparkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0))) scale(1.2);
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0))) scale(0.4);
+    opacity: 0;
+  }
+}
+
+.correct-sparkle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 32px;
+  animation-name: correct-sparkle;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* ---------- Gold stars ---------- */
+
+@keyframes star-twinkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0)))
+      scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0)))
+      scale(1) rotate(270deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0) - 30px))
+      scale(0.4) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.gold-star {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: var(--size, 56px);
+  line-height: 1;
+  filter: drop-shadow(0 0 12px rgba(252, 211, 77, 0.8))
+    drop-shadow(0 0 4px rgba(252, 211, 77, 1));
+  animation-name: star-twinkle;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* ---------- Retro SUCCESS ---------- */
+
+@keyframes retro-glitch-in {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+    filter: hue-rotate(180deg) blur(8px);
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 1;
+    filter: hue-rotate(0deg) blur(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@keyframes retro-scanlines {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 8px;
+  }
+}
+
+.retro-success {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 24px 48px;
+  font-family: 'Courier New', monospace;
+  font-weight: 900;
+  font-size: 72px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  color: #fff700;
+  background: #0a0026;
+  border: 4px solid #ff00d4;
+  box-shadow:
+    0 0 0 4px #00fff7,
+    0 0 24px #ff00d4,
+    0 0 60px rgba(255, 0, 212, 0.5),
+    inset 0 0 24px rgba(255, 247, 0, 0.2);
+  text-shadow:
+    2px 0 0 #ff00d4,
+    -2px 0 0 #00fff7,
+    0 0 12px #fff700;
+  animation: retro-glitch-in var(--duration, 3000ms) steps(20, end) both;
+}
+
+.retro-success::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 3px,
+    rgba(0, 0, 0, 0.35) 3px,
+    rgba(0, 0, 0, 0.35) 4px
+  );
+  animation: retro-scanlines 0.5s linear infinite;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* ---------- Emoji burst (chaotic) ---------- */
+
+@keyframes emoji-burst-fly {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0)))
+      scale(1) rotate(var(--rot, 360deg));
+    opacity: 0;
+  }
+}
+
+.emoji-burst-piece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: var(--size, 52px);
+  line-height: 1;
+  animation-name: emoji-burst-fly;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+/* ---------- Pixel crowd cheering ---------- */
+
+@keyframes crowd-arms {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes crowd-rise {
+  0% {
+    transform: translateY(60%);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(20%);
+    opacity: 0;
+  }
+}
+
+.crowd-row {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 64px;
+  line-height: 1;
+  animation: crowd-rise var(--duration, 3000ms) ease-out both;
+}
+
+.crowd-figure {
+  display: inline-block;
+  animation: crowd-arms 0.4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* ---------- Reduced motion: freeze each reaction mid-flight ---------- */
+
+/* Negative animation-delay shifts each paused element back into its
+   mid-keyframe — most fade-outs end at opacity:0 so the END would be invisible.
+   Confetti / Fireworks / EmojiBurst opt out and render their own static layout
+   from JSX because per-element delays vary too widely for one shared offset. */
+[data-static] .applause-emoji,
+[data-static] .applause-ring,
+[data-static] .applause-banner,
+[data-static] .pixel-heart,
+[data-static] .correct-card,
+[data-static] .correct-sparkle,
+[data-static] .gold-star,
+[data-static] .retro-success,
+[data-static] .crowd-row,
+[data-static] .crowd-figure {
+  animation-play-state: paused !important;
+  animation-delay: -750ms !important;
+  animation-fill-mode: both !important;
+}
+
+[data-static] .retro-scanlines,
+[data-static] .crowd-figure {
+  animation-iteration-count: 1 !important;
+}
