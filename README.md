@@ -8,7 +8,7 @@ their slides. The animation lands on top of whatever you're showing (yes,
 including a Teams or Zoom share), runs for a couple of seconds, and then
 disappears.
 
-<video src="https://github.com/burntsouup/fanfare/raw/main/docs/fanfare-demo.mp4" controls width="100%"></video>
+![Fanfare in action](docs/fanfare-gif.gif)
 
 ## Install
 
