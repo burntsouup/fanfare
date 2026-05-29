@@ -12,6 +12,8 @@
     "start": "electron-vite preview",
     "package:win": "electron-vite build && electron-builder --win --publish never",
     "package:mac": "electron-vite build && electron-builder --mac --publish never",
+    "release:win": "electron-vite build && electron-builder --win --publish always",
+    "release:mac": "electron-vite build && electron-builder --mac --x64 --arm64 --publish always",
     "gen:icons": "powershell -ExecutionPolicy Bypass -File scripts/gen-icons.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
   },
@@ -37,6 +39,13 @@
   "build": {
     "appId": "com.fanfare.app",
     "productName": "Fanfare",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "burntsouup",
+        "repo": "fanfare"
+      }
+    ],
     "directories": {
       "output": "release"
     },
