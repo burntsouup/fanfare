@@ -1,6 +1,19 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { IPC } from '../shared/ipc'
 import type { DisplayInfo, Reaction, Settings } from '../shared/types'
+
+// Inlined from src/shared/ipc.ts. Sandboxed preloads can't require() relative
+// paths, so sharing this via an import causes rollup to emit a chunk that
+// crashes at load time. Keep in sync with the shared module by hand.
+const IPC = {
+  SettingsGet: 'settings:get',
+  SettingsUpdate: 'settings:update',
+  SettingsChanged: 'settings:changed',
+  ReactionUpdate: 'reaction:update',
+  ReactionTest: 'reaction:test',
+  HotkeysPause: 'hotkeys:pause',
+  HotkeysResume: 'hotkeys:resume',
+  DisplaysList: 'displays:list'
+} as const
 
 const api = {
   getSettings: (): Promise<Settings> => ipcRenderer.invoke(IPC.SettingsGet),
