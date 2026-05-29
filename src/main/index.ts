@@ -214,29 +214,44 @@ function triggerReaction(reaction: Reaction): void {
 let registeredAccelerators: string[] = []
 let masterMuteAccelerator: string | null = null
 
-function registerHotkeys(settings: Settings): void {
-  for (const acc of registeredAccelerators) globalShortcut.unregister(acc)
-  registeredAccelerators = []
+// Keep master mute registration isolated from reaction registration.
+// Re-registering an accelerator from inside its own callback is unreliable
+// on Windows (the second register() silently fails), so we only touch the
+// master mute binding when the master mute *hotkey itself* changes — never
+// just because the pause state flipped.
+function applyMasterMuteRegistration(settings: Settings): void {
+  const desired = settings.masterMuteHotkey || null
+  if (masterMuteAccelerator === desired) return
+
   if (masterMuteAccelerator) {
     globalShortcut.unregister(masterMuteAccelerator)
     masterMuteAccelerator = null
   }
-
-  // Master mute hotkey is always registered (even when paused) so the user can resume.
-  if (settings.masterMuteHotkey) {
-    try {
-      const ok = globalShortcut.register(settings.masterMuteHotkey, () => toggleMasterMute())
-      if (ok) masterMuteAccelerator = settings.masterMuteHotkey
-      else console.warn('[fanfare] failed to register master mute hotkey', settings.masterMuteHotkey)
-    } catch (err) {
-      console.warn('[fanfare] invalid master mute accelerator', settings.masterMuteHotkey, err)
-    }
+  if (!desired) return
+  try {
+    const ok = globalShortcut.register(desired, () => toggleMasterMute())
+    if (ok) masterMuteAccelerator = desired
+    else console.warn('[fanfare] failed to register master mute hotkey', desired)
+  } catch (err) {
+    console.warn('[fanfare] invalid master mute accelerator', desired, err)
   }
+}
 
+function applyReactionHotkeys(settings: Settings): void {
+  for (const acc of registeredAccelerators) globalShortcut.unregister(acc)
+  registeredAccelerators = []
   if (settings.hotkeysPaused) return
 
   for (const reaction of settings.reactions) {
     if (!reaction.enabled || !reaction.hotkey) continue
+    // Never let a reaction's hotkey clobber the master mute binding.
+    if (reaction.hotkey === masterMuteAccelerator) {
+      console.warn(
+        '[fanfare] skipping reaction hotkey that collides with master mute:',
+        reaction.hotkey
+      )
+      continue
+    }
     try {
       const ok = globalShortcut.register(reaction.hotkey, () => triggerReaction(reaction))
       if (ok) registeredAccelerators.push(reaction.hotkey)
@@ -247,11 +262,18 @@ function registerHotkeys(settings: Settings): void {
   }
 }
 
+function registerHotkeys(settings: Settings): void {
+  applyMasterMuteRegistration(settings)
+  applyReactionHotkeys(settings)
+}
+
 function toggleMasterMute(): void {
   const current = getSettings()
   const next: Settings = { ...current, hotkeysPaused: !current.hotkeysPaused }
   const saved = setSettings(next)
-  registerHotkeys(saved)
+  // Only reaction hotkeys need re-applying here — the master mute binding
+  // is the very callback we're inside, so leave it alone.
+  applyReactionHotkeys(saved)
   refreshTrayMenu()
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.webContents.send(IPC.SettingsChanged, saved)
