@@ -44,7 +44,8 @@
       {
         "provider": "github",
         "owner": "burntsouup",
-        "repo": "fanfare"
+        "repo": "fanfare",
+        "releaseType": "release"
       }
     ],
     "directories": {
