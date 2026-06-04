@@ -66,8 +66,12 @@
     "win": {
       "target": "nsis",
       "icon": "build/icon.png",
-      "sign": "build/sign.js",
-      "publisherName": "Kyle Czernuszka"
+      "azureSignOptions": {
+        "publisherName": "Kyle Czernuszka",
+        "endpoint": "https://eus.codesigning.azure.net/",
+        "codeSigningAccountName": "kyle-app-signing-account",
+        "certificateProfileName": "production"
+      }
     },
     "mac": {
       "target": "dmg",

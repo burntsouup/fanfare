@@ -26,44 +26,14 @@ jobs:
 
       - run: npm ci
 
-      # ----- Windows code signing (Azure Trusted / Artifact Signing) -----
-      # These steps only run when the repo variable SIGN_WINDOWS == 'true'.
-      # Until you set it, Windows builds publish unsigned exactly as before.
-      - name: Set up Azure Trusted Signing
-        if: matrix.os == 'windows-latest' && vars.SIGN_WINDOWS == 'true'
-        shell: pwsh
-        run: |
-          # Install the Azure Code Signing dlib via NuGet (latest version).
-          $tsDir = Join-Path $env:RUNNER_TEMP 'tsclient'
-          nuget install Microsoft.Trusted.Signing.Client -ExcludeVersion -Outputdirectory $tsDir
-          $dlib = Join-Path $tsDir 'Microsoft.Trusted.Signing.Client\bin\x64\Azure.CodeSigning.Dlib.dll'
-          if (-not (Test-Path $dlib)) { throw "Code signing dlib not found at $dlib" }
-
-          # Locate signtool.exe from the Windows SDK (newest version available).
-          $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe' |
-            Sort-Object FullName -Descending | Select-Object -First 1
-          if (-not $signtool) { throw 'signtool.exe not found' }
-
-          # Write the signing metadata file from repo variables.
-          $metadata = Join-Path $env:RUNNER_TEMP 'codesign-metadata.json'
-          @{
-            Endpoint               = '${{ vars.AZURE_CODESIGNING_ENDPOINT }}'
-            CodeSigningAccountName = '${{ vars.AZURE_CODESIGNING_ACCOUNT }}'
-            CertificateProfileName = '${{ vars.AZURE_CODESIGNING_PROFILE }}'
-          } | ConvertTo-Json | Set-Content -Path $metadata -Encoding utf8
-
-          # Expose to subsequent steps (read by build/sign.js).
-          "SIGNTOOL_PATH=$($signtool.FullName)"  | Out-File $env:GITHUB_ENV -Append
-          "AZURE_CODESIGNING_DLIB=$dlib"         | Out-File $env:GITHUB_ENV -Append
-          "AZURE_CODESIGNING_METADATA=$metadata" | Out-File $env:GITHUB_ENV -Append
-
       - name: Build & publish (Windows)
         if: matrix.os == 'windows-latest'
         run: npm run release:win
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Azure service principal credentials read by the signing dlib.
-          # Harmless when empty (signing is skipped); populated only when set.
+          # electron-builder's azureSignOptions authenticates to Azure Trusted
+          # Signing via these env vars (Azure EnvironmentCredential) and downloads
+          # the signing dlib internally — no NuGet/signtool setup needed.
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
