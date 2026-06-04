@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Keep npm dependencies (Electron, React, etc.) patched. Dependabot opens a
+  # PR whenever a dependency has a newer version, and a high-priority PR when a
+  # known security vulnerability is fixed upstream.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Bundle minor/patch bumps into a single PR to reduce noise.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Keep the GitHub Actions used in the release workflow up to date.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

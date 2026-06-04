@@ -12,6 +12,7 @@ import {
 } from 'electron'
 import { join } from 'node:path'
 import { existsSync } from 'node:fs'
+import { autoUpdater } from 'electron-updater'
 import { getSettings, setSettings, updateReaction } from './store'
 import { IPC } from '../shared/ipc'
 import type {
@@ -343,6 +344,28 @@ function applyLoginItem(settings: Settings): void {
   app.setLoginItemSettings({ openAtLogin: settings.launchOnStartup })
 }
 
+// ---------- auto-update ----------
+
+// In production, check GitHub Releases (same repo as `build.publish`) for a newer
+// version and download it in the background. On Windows the update is applied the
+// next time the app launches. electron-updater reads the latest.yml that
+// electron-builder publishes with every release, so no extra infrastructure is
+// needed. Disabled in dev (there is no published feed to check against).
+//
+// Note: macOS only applies updates to a signed + notarized build. Until the Mac
+// build is signed, the check runs but silently no-ops there.
+function setupAutoUpdates(): void {
+  if (isDev) return
+  autoUpdater.autoDownload = true
+  autoUpdater.autoInstallOnAppQuit = true
+  autoUpdater.on('error', (err) => {
+    console.warn('[fanfare] auto-update error:', err?.message ?? err)
+  })
+  autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+    console.warn('[fanfare] update check failed:', err?.message ?? err)
+  })
+}
+
 // ---------- tray ----------
 
 function trayImage(): Electron.NativeImage {
@@ -464,6 +487,7 @@ app.whenReady().then(() => {
   createTray()
   createSettingsWindow()
   registerHotkeys(settings)
+  setupAutoUpdates()
 
   app.on('activate', () => {
     createSettingsWindow()

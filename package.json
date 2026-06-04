@@ -1,6 +1,6 @@
 {
   "name": "fanfare",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Hotkey-triggered joy for virtual presentations.",
   "main": "out/main/index.js",
   "author": "burntsoup",
@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
-    "electron-store": "8.2.0"
+    "electron-store": "8.2.0",
+    "electron-updater": "^6.8.3"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
@@ -64,7 +65,9 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "sign": "build/sign.js",
+      "publisherName": "Kyle Czernuszka"
     },
     "mac": {
       "target": "dmg",
