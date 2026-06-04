@@ -12,7 +12,8 @@ const IPC = {
   ReactionTest: 'reaction:test',
   HotkeysPause: 'hotkeys:pause',
   HotkeysResume: 'hotkeys:resume',
-  DisplaysList: 'displays:list'
+  DisplaysList: 'displays:list',
+  AppGetVersion: 'app:get-version'
 } as const
 
 const api = {
@@ -25,6 +26,7 @@ const api = {
   pauseHotkeys: (): Promise<void> => ipcRenderer.invoke(IPC.HotkeysPause),
   resumeHotkeys: (): Promise<void> => ipcRenderer.invoke(IPC.HotkeysResume),
   listDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke(IPC.DisplaysList),
+  getVersion: (): Promise<string> => ipcRenderer.invoke(IPC.AppGetVersion),
   onSettingsChanged: (cb: (next: Settings) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, next: Settings): void => cb(next)
     ipcRenderer.on(IPC.SettingsChanged, listener)

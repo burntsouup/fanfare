@@ -8,6 +8,7 @@ export const IPC = {
   HotkeysPause: 'hotkeys:pause',
   HotkeysResume: 'hotkeys:resume',
   DisplaysList: 'displays:list',
+  AppGetVersion: 'app:get-version',
 
   // Main -> overlay
   OverlayTrigger: 'overlay:trigger'

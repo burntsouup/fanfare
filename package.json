@@ -1,6 +1,6 @@
 {
   "name": "fanfare",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Hotkey-triggered joy for virtual presentations.",
   "main": "out/main/index.js",
   "author": "burntsoup",

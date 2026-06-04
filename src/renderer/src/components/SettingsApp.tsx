@@ -140,6 +140,12 @@ export function SettingsApp(): JSX.Element {
 }
 
 function Header(): JSX.Element {
+  const [version, setVersion] = useState<string>('')
+
+  useEffect(() => {
+    window.fanfare.getVersion().then(setVersion)
+  }, [])
+
   return (
     <header className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
       <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent2 grid place-items-center text-lg">
@@ -151,6 +157,11 @@ function Header(): JSX.Element {
           Hotkey-triggered joy for virtual presentations.
         </p>
       </div>
+      {version && (
+        <span className="ml-auto text-xs text-paper/50 font-mono self-start">
+          v{version}
+        </span>
+      )}
     </header>
   )
 }

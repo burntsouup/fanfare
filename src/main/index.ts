@@ -337,6 +337,11 @@ function registerIpc(): void {
     if (!isTrustedSender(evt)) throw new Error('untrusted sender')
     return listDisplays()
   })
+
+  ipcMain.handle(IPC.AppGetVersion, (evt) => {
+    if (!isTrustedSender(evt)) throw new Error('untrusted sender')
+    return app.getVersion()
+  })
 }
 
 function applyLoginItem(settings: Settings): void {
