@@ -209,6 +209,7 @@ app.whenReady().then(() => {
   createTray()
   createSettingsWindow()
   registerHotkeys(settings)
+  setupAutoUpdates()
 })
 ```
 
@@ -374,6 +375,53 @@ core feature.
 The full implementation has more nuance — see [§4](#4-hotkey-trace) and
 [§9.2](#92-the-windows-globalshortcut-bug-v012) for the case study on the
 re-registration bug we fixed.
+
+#### 3.3.10 Set up auto-update
+
+```ts
+setupAutoUpdates()
+```
+
+This is the last boot step. In a packaged build it asks GitHub Releases
+"is there a newer version than the one running?" and, if so, downloads it
+in the background and installs it the next time the app quits. The whole
+function:
+
+```ts
+function setupAutoUpdates(): void {
+  if (isDev) return                          // no feed to check in dev
+  autoUpdater.autoDownload = true            // grab the update silently
+  autoUpdater.autoInstallOnAppQuit = true    // apply it on next quit
+  autoUpdater.on('error', (err) => { ...log... })
+  autoUpdater.checkForUpdatesAndNotify().catch(...)
+}
+```
+
+The `if (isDev) return` guard matters: there's no published release feed
+to check against while you're running `npm run dev`, so we skip it entirely
+in development.
+
+`autoUpdater` comes from `electron-updater`. It reads the `latest.yml` file
+that electron-builder publishes alongside every release (covered in
+[§7](#7-the-build-pipeline) and [§8](#8-the-release-pipeline)). That file
+lists the newest version, the installer filename, and a checksum.
+electron-updater compares the version to `app.getVersion()`, and if the
+remote one is higher, downloads the installer and verifies the checksum
+before applying it.
+
+**Why it takes two relaunches to update:** the first launch *detects and
+downloads* the new version in the background; the update is staged but not
+yet applied. It installs when the app next quits, so the *second* relaunch
+is the one running the new code. This is by design — we never interrupt a
+running session to force an update.
+
+The version number shown in the settings header (wired through the
+`app:get-version` IPC channel) is the user-visible proof this worked: after
+an update, the header number ticks up on its own.
+
+> **macOS caveat:** auto-update only applies to a signed + notarized Mac
+> build. The Mac build isn't notarized yet, so the check runs but silently
+> no-ops there. Windows is fully wired up.
 
 ### 3.4 The renderer processes start
 
@@ -908,8 +956,9 @@ The build process:
    prompt.
 5. **Generate auto-update metadata.** `latest.yml` (Windows) and
    `latest-mac.yml` (macOS) contain the new version number, the installer
-   filename, and a SHA-512 checksum. Even though we don't have auto-update
-   wired up yet, these files get generated for free.
+   filename, and a SHA-512 checksum. This is exactly the file
+   `electron-updater` reads at runtime to decide whether an update is
+   available (see [§3.3.10](#3310-set-up-auto-update)).
 
 The output lands in `release/`. That's what users download.
 
@@ -968,6 +1017,9 @@ For each runner:
   run: npm run release:win
   env:
     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 ```
 
 1. **Checkout the code** at the tag's commit.
@@ -979,27 +1031,67 @@ For each runner:
 5. **`GH_TOKEN`** — GitHub auto-injects a token with permissions to write
    to the current repo (because we declared `permissions: contents: write`
    at the workflow level). electron-builder uses this token to create the
-   draft release and upload installers.
+   release and upload installers.
+6. **The three `AZURE_*` secrets** — these authenticate to Azure Trusted
+   Signing so electron-builder can sign the `.exe` during the build (see
+   §8.4). They're stored as encrypted repo secrets, never in the code.
 
-### 8.4 The publishing step
+### 8.4 Code signing during the build
+
+The Windows build is code-signed via **Azure Trusted Signing** (Microsoft's
+cloud signing service, ~$10/mo, available to individual developers in the
+US and Canada). The signing config lives in `package.json` under
+`build.win.azureSignOptions`:
+
+```json
+"azureSignOptions": {
+  "publisherName": "Kyle Czernuszka",
+  "endpoint": "https://eus.codesigning.azure.net/",
+  "codeSigningAccountName": "kyle-app-signing-account",
+  "certificateProfileName": "production"
+}
+```
+
+During the build, electron-builder authenticates to Azure using the three
+`AZURE_*` secrets, requests a short-lived certificate, signs the `.exe`,
+and timestamps the signature via `http://timestamp.acs.microsoft.com`.
+The timestamp is what makes the signature stay valid forever even though
+Azure's certificates themselves expire every 3 days — a timestamped
+signature proves "this was signed while the cert was valid," so it never
+goes stale.
+
+What signing buys you: Windows SmartScreen stops claiming the publisher is
+"unknown." A brand-new app may still show a one-time reputation warning
+until enough people download it, but the publisher identity check passes
+immediately.
+
+> **Why native `azureSignOptions` and not a custom signtool script?**
+> electron-builder 26 added first-class Azure Trusted Signing support.
+> An earlier attempt used a custom `signtool` hook (`build/sign.js`) plus
+> a NuGet install step in the workflow; it was deleted once the native
+> option proved simpler. See [§9.4](#94-the-signing-config-schema-bug).
+
+### 8.5 The publishing step
 
 `electron-builder --publish always` does these things after the build:
 
 1. Look at the `publish` config in `package.json` — that points at
    `burntsouup/fanfare` on GitHub.
-2. Check if a release named `v0.1.2` exists. If not, create one as a draft.
+2. Check if a release for the tag (e.g. `v0.2.2`) exists. If not, create
+   one. Because our config sets `"releaseType": "release"`, it's created
+   as a **published** release, not a draft.
 3. Upload each generated artifact (the `.exe`, the `.dmg`, the `latest.yml`,
    the blockmaps) as assets on that release.
 4. Repeat for each runner. Windows uploads its `.exe`. Mac uploads its
-   `.dmg` files. Both reference the same draft release, so all assets end
-   up attached to the same `v0.1.2`.
+   `.dmg` files. Both reference the same release, so all assets end
+   up attached to the same tag.
 
-### 8.5 The human step
-
-The release is created as a **draft**, not published. You go to the
-Releases page, review the assets, add release notes, and click Publish.
-That's deliberate — it's a safety net so you can review what's about to
-be public.
+The `releaseType` setting is important and bit us once: electron-builder's
+default is `"draft"`, and **draft releases are invisible to
+electron-updater** — so auto-update silently does nothing until you
+manually publish the draft. Setting `"releaseType": "release"` makes the
+whole pipeline hands-off: push a tag → CI builds, signs, and publishes →
+every installed copy auto-updates. See [§9.5](#95-the-draft-release-bug).
 
 ---
 
@@ -1113,6 +1205,58 @@ Lessons:
    `setImmediate(...)` to defer, or split your registration logic so the
    triggering hotkey's binding isn't touched.
 
+### 9.4 The signing config schema bug
+
+**Symptom:** After adding code signing, CI failed on *both* runners —
+including the macOS one, which has nothing to do with Windows signing.
+
+**Root cause:** We first wrote the signing config using `win.sign` and
+`win.publisherName`. Those were valid in older electron-builder, but
+version 26 **restructured Windows signing** — those properties no longer
+exist. electron-builder validates the *entire* config against its schema
+*before* it builds anything, so an invalid Windows property aborted the
+run on every platform, Mac included.
+
+**The fix:** Move signing into the v26 location — `win.azureSignOptions`
+(native Azure Trusted Signing support) with its four required fields
+(`endpoint`, `codeSigningAccountName`, `certificateProfileName`,
+`publisherName`). We also deleted an earlier custom `signtool` hook
+(`build/sign.js`) and a NuGet install workflow step that the native
+option made redundant. (A side-quest here: Microsoft renamed the service
+from "Trusted Signing" to "Artifact Signing" mid-effort, which briefly
+broke a NuGet package reference before we abandoned that approach.)
+
+**Lesson:** config-schema validation runs up front and fails the whole
+matrix. When a tool jumps a major version (here 25 → 26), check whether
+the options you're copying from old tutorials still exist.
+
+### 9.5 The draft-release bug
+
+**Symptom:** v0.2.1 was built and appeared on the Releases page, but the
+installed app never updated to it.
+
+**Root cause:** electron-builder's `publish` config defaults
+`releaseType` to `"draft"`. Draft releases are visible to *you* (the repo
+owner) but invisible to **electron-updater** and to GitHub's public
+"latest release" API. So the auto-updater kept seeing the older published
+release as "latest" and concluded there was nothing to update to.
+
+**The fix:** Add `"releaseType": "release"` to the `publish` config so
+releases are published immediately. After that, the pipeline is fully
+hands-off — a pushed tag becomes a public release with no manual step,
+and installed copies update on their next two relaunches.
+
+**Lesson:** "the release exists on GitHub" and "the auto-updater can see
+it" are two different things. Drafts satisfy the first but not the second.
+
+### 9.6 The pattern across the build bugs
+
+9.1 and 9.2 worked in dev and broke in production. 9.4 and 9.5 broke in
+CI/release, not on the dev machine at all. The common thread: **the parts
+of an app that only run when packaged or released are the parts you test
+least and trust most.** Build a habit of testing the actual installed
+artifact and the actual published release, not just `npm run dev`.
+
 ---
 
 ## 10. Trade-offs
@@ -1170,37 +1314,41 @@ ourselves in 30 lines. We didn't because:
 - It picks the right user-data directory per platform.
 - The maintenance cost is zero.
 
-### 10.5 No auto-update yet
+### 10.5 Auto-update (added after the initial design)
 
-Auto-update via `electron-updater` is wired into electron-builder's
-publish output (the `latest.yml` files exist). We didn't enable the
-client-side bit because:
-- We're shipping bug fixes weekly. Users uninstalling and reinstalling is
-  fine.
-- Auto-update on macOS requires code signing + notarisation. We're
-  unsigned.
-- Auto-update increases the security surface — if your release pipeline
-  is compromised, attackers can push malicious "updates" to every install.
+Auto-update via `electron-updater` is now wired up on Windows (see
+[§3.3.10](#3310-set-up-auto-update)). The original version of this doc
+listed reasons to defer it — weekly manual reinstalls were tolerable, and
+Mac auto-update needs notarization. We added it anyway because "download
+once, it updates itself" is a dramatically better experience for the
+handful of real users, and on Windows it cost only a few lines plus the
+`releaseType: release` fix.
 
-When the app stabilizes, this is a 10-line change to add.
+The one remaining gap is macOS: auto-update there requires an Apple
+Developer ID and notarization ($99/yr), which we've deliberately deferred
+until a Mac user actually appears.
 
-### 10.6 No code signing
+### 10.6 Code signing (added after the initial design)
 
-Apple Developer ID is $99/yr. Windows OV cert is ~$200/yr. For a free
-side project with no revenue, that's not justified. The cost is making
-users click through SmartScreen/Gatekeeper warnings once on install,
-which the README explains.
+The original design skipped code signing because Apple Developer ID
+($99/yr) and a traditional Windows OV cert (~$200/yr) weren't justified
+for a free side project. That calculus changed when **Azure Trusted
+Signing** (~$10/mo, open to individual developers in the US and Canada)
+turned out to be cheap and well-supported by electron-builder 26. The
+Windows build is now signed (see [§8.4](#84-code-signing-during-the-build)),
+which removes the "unknown publisher" SmartScreen warning. macOS signing
+/ notarization is still deferred for the same reason as Mac auto-update.
 
 ---
 
 ## 11. What you'd add next
 
-If you wanted to keep improving this past v0.1.x, here's a rough roadmap
-in order of impact:
+If you wanted to keep improving this past today's build, here's a rough
+roadmap in order of impact:
 
-1. **Auto-update (electron-updater).** Three lines of code in main, plus
-   handling the "update available" UX in the settings window. Massively
-   improves the upgrade story.
+1. **Mac auto-update + notarization.** Windows auto-update is done; the
+   Mac side needs an Apple Developer ID ($99/yr) and a notarization step
+   in the workflow. Worth it once an actual Mac user shows up.
 2. **Crash reporting / telemetry (opt-in).** Right now if a user hits a
    bug, you'd never know. A lightweight `electron-log` + a Sentry-like
    service (opt-in!) would surface real failures.
@@ -1219,8 +1367,10 @@ in order of impact:
    to trigger animations from a Stream Deck or Twitch chat. Expose an
    HTTP or WebSocket endpoint that fires the same `triggerReaction()`
    that hotkeys do.
-7. **Code signing.** Once you have actual users complaining about
-   SmartScreen / Gatekeeper, this becomes worth the $99–300/yr.
+7. **Wider distribution (winget / Microsoft Store).** If you want reach
+   beyond friends, `winget` keeps your existing installer and
+   auto-updater; the Store is more work and replaces your update
+   mechanism. Only pursue if real demand appears.
 
 ---
 
