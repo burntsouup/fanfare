@@ -12,15 +12,16 @@ disappears.
 
 ## Install
 
-Pre-built installers are on the [releases page](https://github.com/burntsouup/fanfare/releases).
+Pre-built installers are on the [releases page](https://github.com/burntsouup/fanfare/releases/latest).
 
-**Windows.** Download the `.exe`, double-click. SmartScreen will say
-"Windows protected your PC" because the binary isn't signed — code signing
-certs cost more than I want to spend on a free side-project. Click
-*More info* → *Run anyway*.
+**Windows.** Download the `.exe` and double-click. The app is code-signed, but
+because it's still new, SmartScreen may show a one-time "Windows protected your
+PC" warning until enough people have downloaded it to build reputation. If you
+see it, click *More info* → *Run anyway*. **You only need to download once** —
+Fanfare updates itself automatically in the background from then on.
 
 **macOS.** Download the `.dmg`, drag the app into Applications. The first time
-you launch it, Gatekeeper will refuse because it isn't notarised (same reason).
+you launch it, Gatekeeper will refuse because it isn't notarised yet.
 Right-click the app → *Open* → *Open* in the dialog. After that it'll launch
 normally.
 
@@ -107,6 +108,9 @@ src/
 Electron + electron-vite, React, TypeScript, Tailwind. Settings live in a JSON
 file via `electron-store`. Animations are plain CSS/SVG, no Lottie or third-
 party graphics deps.
+
+Windows builds are code-signed via Azure Trusted Signing and update themselves
+automatically via `electron-updater` (reads releases published here on GitHub).
 
 No accounts, no telemetry, no cloud sync.
 
