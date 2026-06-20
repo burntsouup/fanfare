@@ -16,7 +16,7 @@
       content="Hotkey-triggered joy for virtual presentations. Confetti, applause, and fireworks on top of any screen share."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="fanfare-gif.gif" />
+    <meta property="og:image" content="ff-demo-1.gif" />
 
     <style>
       :root {
@@ -63,29 +63,33 @@
         text-align: center;
       }
 
-      .wordmark {
-        font-size: 0.95rem;
-        letter-spacing: 0.35em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 1.5rem;
-      }
-
-      h1 {
-        font-size: clamp(2.4rem, 6vw, 3.6rem);
-        line-height: 1.05;
-        margin: 0 0 1rem;
+      .brand {
+        font-size: clamp(3.4rem, 11vw, 6rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin: 0 0 1.1rem;
         background: linear-gradient(120deg, var(--accent), var(--accent-2));
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+        filter: drop-shadow(0 8px 40px rgba(255, 93, 143, 0.35));
+      }
+
+      .headline {
+        font-size: clamp(1.4rem, 3.6vw, 2.1rem);
+        line-height: 1.15;
+        font-weight: 700;
+        color: var(--paper);
+        margin: 0 auto 1.1rem;
       }
 
       .tagline {
-        font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+        font-size: clamp(1.02rem, 2.3vw, 1.22rem);
         color: var(--muted);
-        max-width: 36ch;
+        max-width: 54ch;
         margin: 0 auto 2.5rem;
+        line-height: 1.55;
       }
 
       .preview {
@@ -96,6 +100,7 @@
         box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
         margin: 0 auto 2.75rem;
         display: block;
+        transition: opacity 0.45s ease;
       }
 
       .download {
@@ -166,18 +171,19 @@
   </head>
   <body>
     <main>
-      <p class="wordmark">Fanfare</p>
-      <h1>Hotkey-triggered joy<br />for your presentations</h1>
+      <h1 class="brand">Fanfare</h1>
+      <p class="headline">Big reactions, one hotkey away.</p>
       <p class="tagline">
-        Fire off confetti, applause, and fireworks on top of any screen share —
-        with a single keyboard shortcut.
+        Celebrate with instant confetti, applause, fireworks, and more — fired
+        by hotkeys right over your screen share. Perfect for spicing up
+        webinars, classes, and presentations without missing a beat!
       </p>
 
       <img
         class="preview"
-        src="fanfare-gif.gif"
-        alt="Fanfare firing a burst of confetti and applause over a screen share"
-        loading="lazy"
+        id="preview"
+        src="ff-demo-1.gif"
+        alt="Fanfare firing celebratory animations over a screen share"
       />
 
       <div>
@@ -187,7 +193,7 @@
           >⬇ Download for Windows</a
         >
         <p class="platform-note" id="platformNote">
-          Free · Windows 10 &amp; 11 · updates itself automatically
+          Completely free — no sign-up, no catch.
         </p>
       </div>
 
@@ -203,10 +209,31 @@
 
     <footer>
       <a href="https://github.com/burntsouup/fanfare">View the project on GitHub</a>
-      · Made with 🎉 · MIT licensed
     </footer>
 
     <script>
+      // Rotate through the demo GIFs with a gentle crossfade.
+      var gifs = [
+        "ff-demo-1.gif",
+        "ff-demo-2.gif",
+        "ff-demo-3.gif",
+        "ff-demo-4.gif"
+      ];
+      gifs.forEach(function (src) {
+        var img = new Image();
+        img.src = src; // preload so swaps are instant
+      });
+      var preview = document.getElementById("preview");
+      var idx = 0;
+      setInterval(function () {
+        preview.style.opacity = "0";
+        window.setTimeout(function () {
+          idx = (idx + 1) % gifs.length;
+          preview.src = gifs[idx];
+          preview.style.opacity = "1";
+        }, 450);
+      }, 5000);
+
       // Gentle nudge for non-Windows visitors. The button still works (the
       // installer is Windows-only for now), we just set expectations.
       var isWindows = navigator.userAgent.indexOf("Windows") !== -1;
