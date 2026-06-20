@@ -1249,13 +1249,51 @@ and installed copies update on their next two relaunches.
 **Lesson:** "the release exists on GitHub" and "the auto-updater can see
 it" are two different things. Drafts satisfy the first but not the second.
 
-### 9.6 The pattern across the build bugs
+### 9.6 The hotkeys-die-after-sleep bug (v0.2.3)
+
+**Symptom:** Users reported that after a while they had to Quit Fanfare from
+the tray and relaunch it before the hotkeys would fire again. The app was
+clearly still running — the tray icon was there — but pressing a reaction
+hotkey did nothing. A relaunch always fixed it.
+
+**Root cause:** Global hotkeys are registered once at startup (and whenever
+settings change) via `globalShortcut.register()`, which on Windows wraps the
+Win32 `RegisterHotKey` API. Those registrations are tied to the user session,
+and Windows **silently drops them when the machine sleeps and resumes, or when
+the session locks and unlocks.** Nothing in the app re-registered them
+afterward, so the only code path that ever re-armed the hotkeys was a full
+relaunch — which is exactly the workaround users had discovered on their own.
+
+**The fix:** Listen for the OS telling us it woke up or unlocked, and force a
+clean re-register:
+
+```ts
+powerMonitor.on('resume', reRegisterAllHotkeys)
+powerMonitor.on('unlock-screen', reRegisterAllHotkeys)
+```
+
+`reRegisterAllHotkeys()` clears the cached accelerator state first, then
+re-registers everything from the current settings. Clearing the cache matters:
+the normal registration path short-circuits if it *thinks* a binding is already
+in place (see `applyMasterMuteRegistration` in
+[§3.3.9](#339-register-global-hotkeys)), but after a resume the OS has dropped
+the binding without telling us — so we have to forget what we knew and re-arm
+from scratch.
+
+**Lesson:** a registration with the OS is not permanent. Any long-lived desktop
+app that holds OS-level resources (global hotkeys, tray icons, media keys)
+should assume the OS can revoke them across power and session events, and
+re-acquire them on `powerMonitor` `resume` / `unlock-screen`.
+
+### 9.7 The pattern across the build bugs
 
 9.1 and 9.2 worked in dev and broke in production. 9.4 and 9.5 broke in
-CI/release, not on the dev machine at all. The common thread: **the parts
-of an app that only run when packaged or released are the parts you test
-least and trust most.** Build a habit of testing the actual installed
-artifact and the actual published release, not just `npm run dev`.
+CI/release, not on the dev machine at all. 9.6 only surfaced after a real
+sleep/lock cycle, which no quick dev session reproduces. The common thread:
+**the parts of an app that only run when packaged, released, or left running
+for days are the parts you test least and trust most.** Build a habit of
+testing the actual installed artifact, the actual published release, and the
+app after a sleep/lock — not just `npm run dev`.
 
 ---
 
