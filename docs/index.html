@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fanfare — hotkey-triggered joy for your presentations</title>
+    <meta
+      name="description"
+      content="Fanfare fires off celebratory animations on a global hotkey — confetti, applause, fireworks — right on top of your screen share. Free for Windows."
+    />
+
+    <!-- Social preview -->
+    <meta property="og:title" content="Fanfare" />
+    <meta
+      property="og:description"
+      content="Hotkey-triggered joy for virtual presentations. Confetti, applause, and fireworks on top of any screen share."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="fanfare-gif.gif" />
+
+    <style>
+      :root {
+        --bg: #0e0b1a;
+        --bg-soft: #181333;
+        --paper: #f4f1ff;
+        --muted: rgba(244, 241, 255, 0.62);
+        --accent: #ffb347;
+        --accent-2: #ff5d8f;
+        --ring: rgba(255, 93, 143, 0.5);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: radial-gradient(
+            1200px 600px at 50% -10%,
+            #2a1f54 0%,
+            var(--bg) 60%
+          )
+          no-repeat;
+        color: var(--paper);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      main {
+        flex: 1;
+        width: 100%;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem 2rem;
+        text-align: center;
+      }
+
+      .wordmark {
+        font-size: 0.95rem;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: clamp(2.4rem, 6vw, 3.6rem);
+        line-height: 1.05;
+        margin: 0 0 1rem;
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .tagline {
+        font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+        color: var(--muted);
+        max-width: 36ch;
+        margin: 0 auto 2.5rem;
+      }
+
+      .preview {
+        width: 100%;
+        max-width: 760px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+        margin: 0 auto 2.75rem;
+        display: block;
+      }
+
+      .download {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 1rem 2.2rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1030;
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        border-radius: 999px;
+        text-decoration: none;
+        box-shadow: 0 10px 30px -8px var(--ring);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 40px -10px var(--ring);
+      }
+
+      .download:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      .platform-note {
+        margin-top: 0.9rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .heads-up {
+        max-width: 540px;
+        margin: 2.75rem auto 0;
+        padding: 1.1rem 1.3rem;
+        background: var(--bg-soft);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 12px;
+        font-size: 0.92rem;
+        color: var(--muted);
+        text-align: left;
+        line-height: 1.5;
+      }
+
+      .heads-up strong {
+        color: var(--paper);
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem 1.5rem 2.5rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      footer a {
+        color: var(--paper);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(244, 241, 255, 0.3);
+      }
+
+      footer a:hover {
+        border-bottom-color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="wordmark">Fanfare</p>
+      <h1>Hotkey-triggered joy<br />for your presentations</h1>
+      <p class="tagline">
+        Fire off confetti, applause, and fireworks on top of any screen share —
+        with a single keyboard shortcut.
+      </p>
+
+      <img
+        class="preview"
+        src="fanfare-gif.gif"
+        alt="Fanfare firing a burst of confetti and applause over a screen share"
+        loading="lazy"
+      />
+
+      <div>
+        <a
+          class="download"
+          href="https://github.com/burntsouup/fanfare/releases/latest/download/Fanfare-Setup.exe"
+          >⬇ Download for Windows</a
+        >
+        <p class="platform-note" id="platformNote">
+          Free · Windows 10 &amp; 11 · updates itself automatically
+        </p>
+      </div>
+
+      <div class="heads-up">
+        <strong>First time you run it:</strong> Windows may show a blue
+        “Windows protected your PC” notice because the app is still new. Click
+        <strong>More info → Run anyway</strong> — it’s safe (the app is
+        code-signed), Windows is just being cautious until more people have
+        downloaded it. You only download once; after that Fanfare quietly
+        updates itself.
+      </div>
+    </main>
+
+    <footer>
+      <a href="https://github.com/burntsouup/fanfare">View the project on GitHub</a>
+      · Made with 🎉 · MIT licensed
+    </footer>
+
+    <script>
+      // Gentle nudge for non-Windows visitors. The button still works (the
+      // installer is Windows-only for now), we just set expectations.
+      var isWindows = navigator.userAgent.indexOf("Windows") !== -1;
+      if (!isWindows) {
+        document.getElementById("platformNote").textContent =
+          "Windows 10 & 11 only for now — open this page on a Windows PC to install.";
+      }
+    </script>
+  </body>
+</html>

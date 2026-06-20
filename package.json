@@ -74,6 +74,9 @@
         "certificateProfileName": "production"
       }
     },
+    "nsis": {
+      "artifactName": "${productName}-Setup.${ext}"
+    },
     "mac": {
       "target": "dmg",
       "category": "public.app-category.productivity",
