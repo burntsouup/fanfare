@@ -7,3 +7,6 @@ dist
 *.tsbuildinfo
 .vscode/
 .idea/
+
+# Kept locally for personal review; not published to GitHub.
+docs/HOW-IT-WORKS.md

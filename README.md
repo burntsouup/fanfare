@@ -12,7 +12,7 @@ disappears.
 
 ## Install
 
-Pre-built installers are on the [releases page](https://github.com/burntsouup/fanfare/releases/latest).
+The easiest way is the **[Fanfare download page](https://burntsouup.github.io/fanfare/)** — one click grabs the latest signed Windows installer. (Raw installers are also on the [releases page](https://github.com/burntsouup/fanfare/releases/latest).)
 
 **Windows.** Download the `.exe` and double-click. The app is code-signed, but
 because it's still new, SmartScreen may show a one-time "Windows protected your
