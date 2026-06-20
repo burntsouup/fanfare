@@ -5,6 +5,7 @@ import {
   ipcMain,
   Menu,
   nativeImage,
+  powerMonitor,
   screen,
   session,
   shell,
@@ -268,6 +269,23 @@ function registerHotkeys(settings: Settings): void {
   applyReactionHotkeys(settings)
 }
 
+// Windows silently drops globalShortcut (RegisterHotKey) bindings across system
+// sleep/resume and screen lock/unlock. When that happens the app keeps running
+// but no hotkey fires, and the only recovery was to Quit + relaunch. Force a
+// clean re-register on those OS events so the hotkeys re-arm themselves. We
+// clear the cached accelerator state first because the OS may have dropped the
+// bindings without telling us, and applyMasterMuteRegistration short-circuits
+// when it believes the binding is already in place.
+function reRegisterAllHotkeys(): void {
+  for (const acc of registeredAccelerators) globalShortcut.unregister(acc)
+  registeredAccelerators = []
+  if (masterMuteAccelerator) {
+    globalShortcut.unregister(masterMuteAccelerator)
+    masterMuteAccelerator = null
+  }
+  registerHotkeys(getSettings())
+}
+
 function toggleMasterMute(): void {
   const current = getSettings()
   const next: Settings = { ...current, hotkeysPaused: !current.hotkeysPaused }
@@ -493,6 +511,11 @@ app.whenReady().then(() => {
   createSettingsWindow()
   registerHotkeys(settings)
   setupAutoUpdates()
+
+  // Re-arm global hotkeys after the OS may have silently dropped them (the app
+  // keeps running through sleep/lock, but Windows discards the registrations).
+  powerMonitor.on('resume', reRegisterAllHotkeys)
+  powerMonitor.on('unlock-screen', reRegisterAllHotkeys)
 
   app.on('activate', () => {
     createSettingsWindow()
