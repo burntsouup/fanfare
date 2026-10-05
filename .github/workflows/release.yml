@@ -13,6 +13,9 @@ jobs:
   release:
     strategy:
       fail-fast: false
+      # Run one OS at a time: parallel jobs can race and each create their own
+      # GitHub release for the same tag.
+      max-parallel: 1
       matrix:
         os: [windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
