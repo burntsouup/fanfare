@@ -27,6 +27,9 @@ import { DEFAULT_APPLAUSE_PHRASES } from '../shared/types'
 // electron-vite globals: __dirname -> out/main; ELECTRON_RENDERER_URL set in dev.
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 const RENDERER_DEV_URL = process.env['ELECTRON_RENDERER_URL']
+// True when running from the Microsoft Store (MSIX/AppX) package. The Store
+// handles signing, updates and launch-at-login for that build.
+const isStoreBuild = process.windowsStore === true
 
 let settingsWindow: BrowserWindow | null = null
 let overlayWindow: BrowserWindow | null = null
@@ -360,10 +363,23 @@ function registerIpc(): void {
     if (!isTrustedSender(evt)) throw new Error('untrusted sender')
     return app.getVersion()
   })
+
+  ipcMain.handle(IPC.AppIsStoreBuild, (evt) => {
+    if (!isTrustedSender(evt)) throw new Error('untrusted sender')
+    return isStoreBuild
+  })
+
+  ipcMain.handle(IPC.AppOpenStartupSettings, async (evt) => {
+    if (!isTrustedSender(evt)) throw new Error('untrusted sender')
+    if (process.platform === 'win32') await shell.openExternal('ms-settings:startupapps')
+  })
 }
 
+// The Store build declares a StartupTask in its manifest instead (toggled by the
+// user in Windows Settings > Apps > Startup); Run-key entries written from inside
+// an MSIX package are virtualized and never fire.
 function applyLoginItem(settings: Settings): void {
-  if (process.platform === 'linux') return
+  if (process.platform === 'linux' || isStoreBuild) return
   app.setLoginItemSettings({ openAtLogin: settings.launchOnStartup })
 }
 
@@ -376,9 +392,10 @@ function applyLoginItem(settings: Settings): void {
 // needed. Disabled in dev (there is no published feed to check against).
 //
 // Note: macOS only applies updates to a signed + notarized build. Until the Mac
-// build is signed, the check runs but silently no-ops there.
+// build is signed, the check runs but silently no-ops there. The Microsoft Store
+// build is updated by the Store itself.
 function setupAutoUpdates(): void {
-  if (isDev) return
+  if (isDev || isStoreBuild) return
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
   autoUpdater.on('error', (err) => {
@@ -498,7 +515,8 @@ app.whenReady().then(() => {
     createSettingsWindow()
   })
 
-  if (process.platform === 'win32') {
+  // MSIX packages get their AppUserModelID from the package identity.
+  if (process.platform === 'win32' && !isStoreBuild) {
     app.setAppUserModelId('com.fanfare.app')
   }
 

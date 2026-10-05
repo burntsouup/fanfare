@@ -1,6 +1,6 @@
 {
   "name": "fanfare",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Hotkey-triggered joy for virtual presentations.",
   "main": "out/main/index.js",
   "author": "burntsoup",
@@ -14,23 +14,25 @@
     "package:mac": "electron-vite build && electron-builder --mac --publish never",
     "release:win": "electron-vite build && electron-builder --win --publish always",
     "release:mac": "electron-vite build && electron-builder --mac --x64 --arm64 --publish always",
+    "package:store": "electron-vite build && electron-builder --win --config electron-builder.store.js --publish never",
+    "package:store:test": "set FANFARE_STORE_TEST=1&& npm run package:store",
     "gen:icons": "powershell -ExecutionPolicy Bypass -File scripts/gen-icons.ps1",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
     "electron-store": "8.2.0",
-    "electron-updater": "^6.8.3"
+    "electron-updater": "^6.8.9"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
     "@types/react": "18.2.74",
     "@types/react-dom": "18.2.24",
     "@vitejs/plugin-react": "4.2.1",
-    "autoprefixer": "10.4.19",
-    "electron": "^42.3.0",
-    "electron-builder": "^26.8.1",
+    "autoprefixer": "10.6.1",
+    "electron": "^42.11.8",
+    "electron-builder": "^26.15.3",
     "electron-vite": "2.1.0",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.28",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwindcss": "3.4.3",

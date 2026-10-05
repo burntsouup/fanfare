@@ -87,6 +87,7 @@ generic, no extra wiring needed.
 
 ```
 resources/   tray + app icons (regen with `npm run gen:icons`)
+build/       packaging icons, incl. Microsoft Store tiles in build/appx/
 scripts/     one-off dev scripts
 src/
 ├── main/      Electron main: windows, hotkeys, tray, store, IPC
@@ -101,7 +102,8 @@ src/
 - `npm run build` — production assets to `out/`
 - `npm run typecheck` — typecheck main + renderer
 - `npm run package:win` / `package:mac` — produce installers in `release/`
-- `npm run gen:icons` — regenerate tray + app icons (Windows only; uses PowerShell + System.Drawing)
+- `npm run package:store` — Microsoft Store package (`.appx`) in `release/`, ready to upload to Partner Center
+- `npm run gen:icons` — regenerate tray, app, and Store tile icons (Windows only; uses PowerShell + System.Drawing)
 
 ## Stack
 
@@ -109,8 +111,10 @@ Electron + electron-vite, React, TypeScript, Tailwind. Settings live in a JSON
 file via `electron-store`. Animations are plain CSS/SVG, no Lottie or third-
 party graphics deps.
 
-Windows builds are code-signed via Azure Trusted Signing and update themselves
-automatically via `electron-updater` (reads releases published here on GitHub).
+Windows installers on the releases page are code-signed via Azure Trusted Signing
+and update themselves automatically via `electron-updater` (reads releases
+published here on GitHub). The Microsoft Store build is signed and updated by
+the Store instead.
 
 No accounts, no telemetry, no cloud sync.
 

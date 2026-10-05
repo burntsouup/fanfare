@@ -1,0 +1,4 @@
+
+        <desktop:Extension Category="windows.startupTask" Executable="app\Fanfare.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="FanfareStartup" Enabled="false" DisplayName="Fanfare" />
+        </desktop:Extension>

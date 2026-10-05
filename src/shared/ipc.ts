@@ -9,6 +9,8 @@ export const IPC = {
   HotkeysResume: 'hotkeys:resume',
   DisplaysList: 'displays:list',
   AppGetVersion: 'app:get-version',
+  AppIsStoreBuild: 'app:is-store-build',
+  AppOpenStartupSettings: 'app:open-startup-settings',
 
   // Main -> overlay
   OverlayTrigger: 'overlay:trigger'

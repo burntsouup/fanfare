@@ -9,10 +9,12 @@ export function SettingsApp(): JSX.Element {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [tab, setTab] = useState<Tab>('reactions')
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
+  const [isStoreBuild, setIsStoreBuild] = useState(false)
 
   useEffect(() => {
     window.fanfare.getSettings().then(setSettings)
     window.fanfare.listDisplays().then(setDisplays)
+    window.fanfare.isStoreBuild().then(setIsStoreBuild)
     return window.fanfare.onSettingsChanged((next) => setSettings(next))
   }, [])
 
@@ -82,12 +84,30 @@ export function SettingsApp(): JSX.Element {
           {tab === 'settings' && (
             <section className="space-y-6 max-w-2xl">
               <h2 className="text-xl font-semibold">App settings</h2>
-              <ToggleRow
-                label="Launch on system startup"
-                description="Open Fanfare automatically when you log in."
-                value={settings.launchOnStartup}
-                onChange={(v) => updateSettings({ launchOnStartup: v })}
-              />
+              {isStoreBuild ? (
+                <div className="flex items-start gap-4">
+                  <button
+                    type="button"
+                    onClick={() => window.fanfare.openStartupSettings()}
+                    className="mt-0.5 shrink-0 px-3 py-1 rounded-md text-sm bg-white/10 hover:bg-white/15 transition"
+                  >
+                    Open
+                  </button>
+                  <div>
+                    <div className="font-medium">Launch on system startup</div>
+                    <div className="text-sm text-paper/75">
+                      Windows manages this for Store apps. Turn on Fanfare in Settings &gt; Apps &gt; Startup.
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <ToggleRow
+                  label="Launch on system startup"
+                  description="Open Fanfare automatically when you log in."
+                  value={settings.launchOnStartup}
+                  onChange={(v) => updateSettings({ launchOnStartup: v })}
+                />
+              )}
               <ToggleRow
                 label="Reduced motion"
                 description="Show each reaction as a static frame instead of an animation. Recommended for sensitivity to motion."

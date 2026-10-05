@@ -13,7 +13,9 @@ const IPC = {
   HotkeysPause: 'hotkeys:pause',
   HotkeysResume: 'hotkeys:resume',
   DisplaysList: 'displays:list',
-  AppGetVersion: 'app:get-version'
+  AppGetVersion: 'app:get-version',
+  AppIsStoreBuild: 'app:is-store-build',
+  AppOpenStartupSettings: 'app:open-startup-settings'
 } as const
 
 const api = {
@@ -27,6 +29,8 @@ const api = {
   resumeHotkeys: (): Promise<void> => ipcRenderer.invoke(IPC.HotkeysResume),
   listDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke(IPC.DisplaysList),
   getVersion: (): Promise<string> => ipcRenderer.invoke(IPC.AppGetVersion),
+  isStoreBuild: (): Promise<boolean> => ipcRenderer.invoke(IPC.AppIsStoreBuild),
+  openStartupSettings: (): Promise<void> => ipcRenderer.invoke(IPC.AppOpenStartupSettings),
   onSettingsChanged: (cb: (next: Settings) => void): (() => void) => {
     const listener = (_e: Electron.IpcRendererEvent, next: Settings): void => cb(next)
     ipcRenderer.on(IPC.SettingsChanged, listener)

@@ -32,10 +32,17 @@ function Draw-BurstRays([System.Drawing.Graphics]$g, [System.Drawing.Pen]$pen, [
 
 # Color burst: pink-purple gradient disc with white rays + dot
 function New-ColorPng([int]$size, [string]$path) {
-    $bmp = New-Object System.Drawing.Bitmap $size, $size
+    New-ColorTile $size $size $size $path
+}
+
+# Color burst of $iconSize px, centered on a transparent $width x $height canvas.
+function New-ColorTile([int]$width, [int]$height, [int]$iconSize, [string]$path) {
+    $bmp = New-Object System.Drawing.Bitmap $width, $height
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     $g.Clear([System.Drawing.Color]::Transparent)
+    $g.TranslateTransform([single][Math]::Floor(($width - $iconSize) / 2), [single][Math]::Floor(($height - $iconSize) / 2))
+    $size = $iconSize
 
     $rect = New-Object System.Drawing.Rectangle 1, 1, ($size - 2), ($size - 2)
     $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
@@ -95,5 +102,36 @@ New-TemplatePng 44 (Join-Path $res 'tray-iconTemplate@2x.png')
 # electron-builder uses build/icon.png to generate .ico for Win and .icns for macOS.
 New-ColorPng 256 (Join-Path $res 'app-icon.png')
 New-ColorPng 512 (Join-Path $bld 'icon.png')
+
+# Microsoft Store (AppX) visual assets, picked up from build/appx by electron-builder.
+# Each logo ships at several scales so Windows can choose a crisp one per DPI.
+$appx = Join-Path $bld 'appx'
+New-Item -ItemType Directory -Force -Path $appx | Out-Null
+Get-ChildItem $appx -Filter *.png | Remove-Item
+
+# name, base width, base height, icon-to-height ratio
+$tiles = @(
+    @('StoreLogo',         50,  50, 0.90),
+    @('Square44x44Logo',   44,  44, 0.90),
+    @('SmallTile',         71,  71, 0.70),
+    @('Square150x150Logo', 150, 150, 0.60),
+    @('Wide310x150Logo',   310, 150, 0.60),
+    @('LargeTile',         310, 310, 0.55)
+)
+foreach ($t in $tiles) {
+    foreach ($scale in 100, 125, 150, 200, 400) {
+        $w = [int][Math]::Round($t[1] * $scale / 100)
+        $h = [int][Math]::Round($t[2] * $scale / 100)
+        $icon = [int][Math]::Round($h * $t[3])
+        New-ColorTile $w $h $icon (Join-Path $appx "$($t[0]).scale-$scale.png")
+    }
+}
+# Taskbar / Start / title-bar icons: exact pixel sizes, with and without a tile plate.
+foreach ($px in 16, 20, 24, 30, 32, 36, 40, 48, 60, 64, 72, 80, 96, 256) {
+    $icon = [int][Math]::Round($px * 0.94)
+    New-ColorTile $px $px $icon (Join-Path $appx "Square44x44Logo.targetsize-$px.png")
+    New-ColorTile $px $px $icon (Join-Path $appx "Square44x44Logo.targetsize-${px}_altform-unplated.png")
+    New-ColorTile $px $px $icon (Join-Path $appx "Square44x44Logo.targetsize-${px}_altform-lightunplated.png")
+}
 
 Get-ChildItem $res, $bld | Select-Object Directory, Name, Length
