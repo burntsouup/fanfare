@@ -8,12 +8,13 @@
 // delivers updates, so this build needs neither.
 const base = require('./package.json').build
 
-// Copy these three values from Partner Center:
+// Copy these values from Partner Center:
 // Apps and games > Fanfare > Product management > Product identity.
 const STORE_IDENTITY = {
   identityName: 'REPLACE_ME', // "Package/Identity/Name"
   publisher: 'CN=REPLACE_ME', // "Package/Identity/Publisher"
-  publisherDisplayName: 'REPLACE_ME' // "Package/Properties/PublisherDisplayName"
+  publisherDisplayName: 'REPLACE_ME', // "Package/Properties/PublisherDisplayName"
+  displayName: 'Fanfare' // must exactly match the name reserved in Partner Center
 }
 
 // Identity for a locally sideloaded test build. Windows only installs it once
@@ -21,7 +22,8 @@ const STORE_IDENTITY = {
 const LOCAL_TEST_IDENTITY = {
   identityName: 'Fanfare.LocalTest',
   publisher: 'CN=FanfareLocalTest',
-  publisherDisplayName: 'Fanfare (local test)'
+  publisherDisplayName: 'Fanfare (local test)',
+  displayName: 'Fanfare'
 }
 
 const isLocalTest = process.env.FANFARE_STORE_TEST === '1'
@@ -45,7 +47,6 @@ module.exports = {
   appx: {
     ...identity,
     applicationId: 'Fanfare',
-    displayName: 'Fanfare',
     backgroundColor: 'transparent',
     languages: ['en-US'],
     // Windows 10 1809+; required for the desktop StartupTask extension and Electron 42.
