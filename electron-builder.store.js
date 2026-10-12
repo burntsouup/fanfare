@@ -11,10 +11,10 @@ const base = require('./package.json').build
 // Copy these values from Partner Center:
 // Apps and games > Fanfare > Product management > Product identity.
 const STORE_IDENTITY = {
-  identityName: 'REPLACE_ME', // "Package/Identity/Name"
-  publisher: 'CN=REPLACE_ME', // "Package/Identity/Publisher"
-  publisherDisplayName: 'REPLACE_ME', // "Package/Properties/PublisherDisplayName"
-  displayName: 'Fanfare' // must exactly match the name reserved in Partner Center
+  identityName: 'Burntsoup.FanfareReactions', // "Package/Identity/Name"
+  publisher: 'CN=5E2CC7EA-CE0A-4955-B9FA-645CBD2BE79D', // "Package/Identity/Publisher"
+  publisherDisplayName: 'Burntsoup', // "Package/Properties/PublisherDisplayName"
+  displayName: 'Fanfare Reactions' // must exactly match the name reserved in Partner Center
 }
 
 // Identity for a locally sideloaded test build. Windows only installs it once
