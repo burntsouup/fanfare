@@ -12,7 +12,6 @@
     "start": "electron-vite preview",
     "package:win": "electron-vite build && electron-builder --win --publish never",
     "package:mac": "electron-vite build && electron-builder --mac --publish never",
-    "release:win": "electron-vite build && electron-builder --win --publish always",
     "release:mac": "electron-vite build && electron-builder --mac --x64 --arm64 --publish always",
     "package:store": "electron-vite build && electron-builder --win --config electron-builder.store.js --publish never",
     "package:store:test": "set FANFARE_STORE_TEST=1&& npm run package:store",
@@ -68,13 +67,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "build/icon.png",
-      "azureSignOptions": {
-        "publisherName": "Kyle Czernuszka",
-        "endpoint": "https://eus.codesigning.azure.net/",
-        "codeSigningAccountName": "kyle-app-signing-account",
-        "certificateProfileName": "production"
-      }
+      "icon": "build/icon.png"
     },
     "nsis": {
       "artifactName": "${productName}-Setup.${ext}"

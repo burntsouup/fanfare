@@ -3,9 +3,8 @@
 //   npm run package:store        -> release/Fanfare-Store-<version>.appx (upload to Partner Center)
 //   npm run package:store:test   -> test package for local sideloading (sign it with a trusted test cert first)
 //
-// Reuses the main `build` config from package.json, but drops Azure code
-// signing and GitHub publishing: the Store signs the package itself and
-// delivers updates, so this build needs neither.
+// Reuses the main `build` config from package.json, but drops GitHub
+// publishing: the Store signs the package itself and delivers updates.
 const base = require('./package.json').build
 
 // Copy these values from Partner Center:
@@ -35,13 +34,11 @@ if (Object.values(identity).some((v) => v.includes('REPLACE_ME'))) {
   )
 }
 
-const { azureSignOptions: _azureSignOptions, ...winWithoutSigning } = base.win
-
 module.exports = {
   ...base,
   publish: null,
   win: {
-    ...winWithoutSigning,
+    ...base.win,
     target: [{ target: 'appx', arch: ['x64'] }]
   },
   appx: {

@@ -1,5 +1,7 @@
 name: Release
 
+# macOS builds are published to GitHub Releases. Windows ships through the
+# Microsoft Store (npm run package:store, uploaded in Partner Center).
 on:
   push:
     tags:
@@ -11,14 +13,7 @@ permissions:
 
 jobs:
   release:
-    strategy:
-      fail-fast: false
-      # Run one OS at a time: parallel jobs can race and each create their own
-      # GitHub release for the same tag.
-      max-parallel: 1
-      matrix:
-        os: [windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
 
@@ -29,20 +24,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Build & publish (Windows)
-        if: matrix.os == 'windows-latest'
-        run: npm run release:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # electron-builder's azureSignOptions authenticates to Azure Trusted
-          # Signing via these env vars (Azure EnvironmentCredential) and downloads
-          # the signing dlib internally — no NuGet/signtool setup needed.
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-
       - name: Build & publish (macOS)
-        if: matrix.os == 'macos-latest'
         run: npm run release:mac
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

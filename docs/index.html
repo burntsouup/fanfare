@@ -134,6 +134,22 @@
         color: var(--muted);
       }
 
+      .alt-downloads {
+        margin-top: 0.6rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .alt-downloads a {
+        color: var(--paper);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(244, 241, 255, 0.3);
+      }
+
+      .alt-downloads a:hover {
+        border-bottom-color: var(--accent);
+      }
+
       footer {
         text-align: center;
         padding: 2rem 1.5rem 2.5rem;
@@ -172,11 +188,16 @@
       <div>
         <a
           class="download"
-          href="https://github.com/burntsouup/fanfare/releases/latest/download/Fanfare-Setup.exe"
-          >⬇ Download for Windows</a
+          href="https://apps.microsoft.com/detail/9PLK8DM59NLJ"
+          >Get it from the Microsoft Store</a
         >
         <p class="platform-note" id="platformNote">
           Completely free — no sign-up, no catch.
+        </p>
+        <p class="alt-downloads">
+          Prefer a direct download?
+          <a href="https://github.com/burntsouup/fanfare/releases/latest/download/Fanfare-Setup.exe">Windows installer</a>
+          · <a href="https://github.com/burntsouup/fanfare/releases/latest">macOS (.dmg)</a>
         </p>
       </div>
     </main>
@@ -209,12 +230,11 @@
         }, 450);
       }, 5000);
 
-      // Gentle nudge for non-Windows visitors. The button still works (the
-      // installer is Windows-only for now), we just set expectations.
+      // Gentle nudge for non-Windows visitors: the Store is Windows-only.
       var isWindows = navigator.userAgent.indexOf("Windows") !== -1;
       if (!isWindows) {
         document.getElementById("platformNote").textContent =
-          "Windows 10 & 11 only for now — open this page on a Windows PC to install.";
+          "The Store version is for Windows 10 & 11. On a Mac, use the macOS download below.";
       }
     </script>
   </body>

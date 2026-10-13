@@ -12,13 +12,12 @@ disappears.
 
 ## Install
 
-The easiest way is the **[Fanfare download page](https://burntsouup.github.io/fanfare/)** — one click grabs the latest signed Windows installer. (Raw installers are also on the [releases page](https://github.com/burntsouup/fanfare/releases/latest).)
+The easiest way is the **[Fanfare download page](https://burntsouup.github.io/fanfare/)**.
 
-**Windows.** Download the `.exe` and double-click. The app is code-signed, but
-because it's still new, SmartScreen may show a one-time "Windows protected your
-PC" warning until enough people have downloaded it to build reputation. If you
-see it, click *More info* → *Run anyway*. **You only need to download once** —
-Fanfare updates itself automatically in the background from then on.
+**Windows.** Get **[Fanfare Reactions from the Microsoft Store](https://apps.microsoft.com/detail/9PLK8DM59NLJ)**.
+It's free, signed by Microsoft, and the Store keeps it up to date. (The
+Windows installer on the [releases page](https://github.com/burntsouup/fanfare/releases/latest)
+is v0.2.5 and is no longer updated; v0.2.5 itself is code-signed.)
 
 **macOS.** Download the `.dmg`, drag the app into Applications. The first time
 you launch it, Gatekeeper will refuse because it isn't notarised yet.
@@ -111,10 +110,10 @@ Electron + electron-vite, React, TypeScript, Tailwind. Settings live in a JSON
 file via `electron-store`. Animations are plain CSS/SVG, no Lottie or third-
 party graphics deps.
 
-Windows installers on the releases page are code-signed via Azure Trusted Signing
-and update themselves automatically via `electron-updater` (reads releases
-published here on GitHub). The Microsoft Store build is signed and updated by
-the Store instead.
+Windows ships through the Microsoft Store, which signs and updates the app
+(`npm run package:store`). Older GitHub Windows installers (up to v0.2.5) were
+signed with Azure Trusted Signing. macOS builds are published to GitHub
+releases and use `electron-updater`.
 
 No accounts, no telemetry, no cloud sync.
 
